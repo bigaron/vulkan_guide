@@ -7,9 +7,19 @@
 
 #include "VkBootstrap.h"
 
+struct FrameData {
+	VkCommandPool _commandPool{ VK_NULL_HANDLE };
+	VkCommandBuffer _mainCommandBuffer{ VK_NULL_HANDLE };
+};
+
+constexpr unsigned int FRAME_OVERLAP = 2;
+
 class VulkanEngine {
 public:
-
+	FrameData _frames[FRAME_OVERLAP];
+	FrameData& get_current_frame() { return _frames[_frameNumber % FRAME_OVERLAP]; };
+	VkQueue _graphicsQueue{ VK_NULL_HANDLE };
+	uint32_t _graphicsQueueFamily{ 0 };
 	bool _isInitialized{ false };
 	int _frameNumber {0};
 	bool stop_rendering{ false };
