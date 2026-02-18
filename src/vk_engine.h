@@ -82,6 +82,11 @@ public:
 	VkCommandPool _immCommandPool;
 	std::vector<ComputeEffect> backgroundEffects;
 	int currentBackgroundEffect { 0 };
+	VkPipelineLayout _trianglePipelineLayout;
+	VkPipeline _trianglePipeline;
+
+	void init_triangle_pipeline();
+	void draw_geometry(VkCommandBuffer cmd);
 
 	struct SDL_Window *_window { nullptr };
 
