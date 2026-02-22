@@ -57,7 +57,7 @@ public:
 	bool _isInitialized { false };
 	int _frameNumber { 0 };
 	bool stop_rendering { false };
-	VkExtent2D _windowExtent { 1700 , 900 };
+	VkExtent2D _windowExtent { 1280 , 720 };
 	VkInstance _instance { VK_NULL_HANDLE };
 	VkDebugUtilsMessengerEXT _debug_messenger { VK_NULL_HANDLE };
 	VkPhysicalDevice _chosenGPU { VK_NULL_HANDLE };
@@ -84,6 +84,19 @@ public:
 	int currentBackgroundEffect { 0 };
 	VkPipelineLayout _trianglePipelineLayout;
 	VkPipeline _trianglePipeline;
+	VkPipelineLayout _meshPipelineLayout;
+	VkPipeline _meshPipeline;
+
+	GPUMeshBuffers rectangle;
+
+	void init_mesh_pipeline();
+
+
+
+	AllocatedBuffer create_buffer(size_t allocSize, VkBufferUsageFlags usage, VmaMemoryUsage memoryUsage);
+	void destroy_buffer(const AllocatedBuffer &buffer);
+
+	GPUMeshBuffers uploadMesh(std::span<uint32_t> indices, std::span<Vertex> vertices);
 
 	void init_triangle_pipeline();
 	void draw_geometry(VkCommandBuffer cmd);
@@ -115,6 +128,7 @@ private:
 	void draw_background(VkCommandBuffer cmd);
 	void init_descriptors();
 	void init_pipelines();
+	void init_default_data();
 	void init_background_pipelines();
 	void draw_imgui(VkCommandBuffer cmd, VkImageView targetImageView);
 };
