@@ -7,7 +7,7 @@
 #include <vk_descriptors.h>
 #include "VkBootstrap.h"
 #include "vk_pipelines.h"
-
+#include <vk_loader.h> 
 
 struct DeletionQueue {
 	std::deque<std::function<void()>> _deletors;
@@ -82,12 +82,12 @@ public:
 	VkCommandPool _immCommandPool;
 	std::vector<ComputeEffect> backgroundEffects;
 	int currentBackgroundEffect { 0 };
-	VkPipelineLayout _trianglePipelineLayout;
-	VkPipeline _trianglePipeline;
 	VkPipelineLayout _meshPipelineLayout;
 	VkPipeline _meshPipeline;
-
 	GPUMeshBuffers rectangle;
+	std::vector<std::shared_ptr<MeshAsset>> testMeshes;
+	AllocatedImage _depthImage;
+
 
 	void init_mesh_pipeline();
 
