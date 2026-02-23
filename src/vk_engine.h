@@ -87,7 +87,8 @@ public:
 	GPUMeshBuffers rectangle;
 	std::vector<std::shared_ptr<MeshAsset>> testMeshes;
 	AllocatedImage _depthImage;
-
+	bool resize_requested { false };
+	float renderScale = 1.0f;
 
 	void init_mesh_pipeline();
 
@@ -98,7 +99,6 @@ public:
 
 	GPUMeshBuffers uploadMesh(std::span<uint32_t> indices, std::span<Vertex> vertices);
 
-	void init_triangle_pipeline();
 	void draw_geometry(VkCommandBuffer cmd);
 
 	struct SDL_Window *_window { nullptr };
@@ -113,6 +113,8 @@ public:
 
 	//draw loop
 	void draw();
+
+	void resize_swapchain();
 
 	//run main loop
 	void run();
