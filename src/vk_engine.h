@@ -29,6 +29,7 @@ struct FrameData {
 	VkSemaphore _swapChainSemahore { VK_NULL_HANDLE }, _renderSemaphore { VK_NULL_HANDLE };
 	VkFence _renderFence { VK_NULL_HANDLE };
 	DeletionQueue _deletionQueue;
+	DescriptorAllocatorGrowable _frameDescriptors;
 };
 
 struct ComputePushConstants {
@@ -89,6 +90,8 @@ public:
 	AllocatedImage _depthImage;
 	bool resize_requested { false };
 	float renderScale = 1.0f;
+	GPUSceneData sceneData;
+	VkDescriptorSetLayout _gpuSceneDataDescriptorLayout;
 
 	void init_mesh_pipeline();
 
