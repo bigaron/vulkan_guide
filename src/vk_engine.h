@@ -73,7 +73,7 @@ public:
 	VmaAllocator _allocator { VK_NULL_HANDLE };
 	AllocatedImage _drawImage;
 	VkExtent2D _drawExtent;
-	DescriptorAllocator globalDescriptorAllocator;
+	DescriptorAllocatorGrowable globalDescriptorAllocator;
 	VkDescriptorSet _drawImageDescriptors { VK_NULL_HANDLE };
 	VkDescriptorSetLayout _drawImageDescriptorLayout { VK_NULL_HANDLE };
 	VkPipeline _gradientPipeline { VK_NULL_HANDLE };
@@ -92,11 +92,21 @@ public:
 	float renderScale = 1.0f;
 	GPUSceneData sceneData;
 	VkDescriptorSetLayout _gpuSceneDataDescriptorLayout;
+	AllocatedImage _whiteImage;
+	AllocatedImage _blackImage;
+	AllocatedImage _greyImage;
+	AllocatedImage _errorCheckerboardImage;
+
+	VkSampler _defaultSamplerLinear;
+	VkSampler _defaultSamplerNearest;
+	VkDescriptorSetLayout _singleImageDescriptorLayout;
 
 	void init_mesh_pipeline();
 
 
-
+	AllocatedImage create_image(VkExtent3D size, VkFormat format, VkImageUsageFlags usage, bool mipmapped = false);
+	AllocatedImage create_image(void *data, VkExtent3D size, VkFormat format, VkImageUsageFlags usage, bool mipmapped = false);
+	void destroy_image(const AllocatedImage &img);
 	AllocatedBuffer create_buffer(size_t allocSize, VkBufferUsageFlags usage, VmaMemoryUsage memoryUsage);
 	void destroy_buffer(const AllocatedBuffer &buffer);
 
