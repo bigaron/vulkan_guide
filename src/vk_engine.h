@@ -77,6 +77,14 @@ struct GLTFMetallic_Roughness {
 	MaterialInstance write_material(VkDevice device, MaterialPass pass, const MaterialResources &resources, DescriptorAllocatorGrowable &descriptorAllocator);
 };
 
+
+struct MeshNode : public Node {
+
+	std::shared_ptr<MeshAsset> mesh;
+
+	virtual void Draw(const glm::mat4 &topMatrix, DrawContext &ctx) override;
+};
+
 constexpr unsigned int FRAME_OVERLAP = 2;
 
 class VulkanEngine {
@@ -132,6 +140,10 @@ public:
 	VkDescriptorSetLayout _singleImageDescriptorLayout;
 	MaterialInstance defaultData;
 	GLTFMetallic_Roughness metalRoughMaterial;
+	DrawContext mainDrawContext;
+	std::unordered_map<std::string, std::shared_ptr<Node>> loadedNodes;
+
+	void update_scene();
 
 	void init_mesh_pipeline();
 
