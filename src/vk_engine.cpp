@@ -92,6 +92,14 @@ void GLTFMetallic_Roughness::build_pipelines(VulkanEngine *engine) {
 	vkDestroyShaderModule(engine->_device, meshVertexShader, nullptr);
 }
 
+void GLTFMetallic_Roughness::clear_resources(VkDevice device) {
+	vkDestroyDescriptorSetLayout(device, materialLayout, nullptr);
+	vkDestroyPipelineLayout(device, transparentPipeline.layout, nullptr);
+
+	vkDestroyPipeline(device, transparentPipeline.pipeline, nullptr);
+	vkDestroyPipeline(device, opaquePipeline.pipeline, nullptr);
+}
+
 MaterialInstance GLTFMetallic_Roughness::write_material(VkDevice device, MaterialPass pass, const MaterialResources &resources, DescriptorAllocatorGrowable &descriptorAllocator) {
 	MaterialInstance matData;
 	matData.passType = pass;
@@ -385,6 +393,24 @@ void VulkanEngine::draw_geometry(VkCommandBuffer cmd) {
 	for (const RenderObject &draw : mainDrawContext.OpaqueSurfaces) {
 
 		vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, draw.material->pipeline->pipeline);
+		//set dynamic viewport and scissor
+		VkViewport viewport = {};
+		viewport.x = 0;
+		viewport.y = 0;
+		viewport.width = _drawExtent.width;
+		viewport.height = _drawExtent.height;
+		viewport.minDepth = 0.f;
+		viewport.maxDepth = 1.f;
+
+		vkCmdSetViewport(cmd, 0, 1, &viewport);
+
+		VkRect2D scissor = {};
+		scissor.offset.x = 0;
+		scissor.offset.y = 0;
+		scissor.extent.width = viewport.width;
+		scissor.extent.height = viewport.height;
+
+		vkCmdSetScissor(cmd, 0, 1, &scissor);
 		vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, draw.material->pipeline->layout, 0, 1, &globalDescriptor, 0, nullptr);
 		vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, draw.material->pipeline->layout, 1, 1, &draw.material->materialSet, 0, nullptr);
 
@@ -450,6 +476,7 @@ void VulkanEngine::cleanup() {
 			destroy_buffer(mesh->meshBuffers.indexBuffer);
 			destroy_buffer(mesh->meshBuffers.vertexBuffer);
 		}
+		metalRoughMaterial.clear_resources(_device);
 
 		_mainDeletionQueue.flush();
 
@@ -889,7 +916,7 @@ void VulkanEngine::draw_background(VkCommandBuffer cmd) {
 }
 
 void VulkanEngine::init_descriptors() {
-	std::vector<DescriptorAllocatorGrowable::PoolSizeRatio> sizes = { {VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 1 }, {VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1} };
+	std::vector<DescriptorAllocatorGrowable::PoolSizeRatio> sizes = { {VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 1 }, {VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1}, {VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1} };
 
 	globalDescriptorAllocator.init(_device, 10, sizes);
 
