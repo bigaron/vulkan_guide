@@ -8,6 +8,7 @@
 #include "VkBootstrap.h"
 #include "vk_pipelines.h"
 #include <vk_loader.h> 
+#include <camera.h>
 
 struct DeletionQueue {
 	std::deque<std::function<void()>> _deletors;
@@ -142,6 +143,7 @@ public:
 	MaterialInstance defaultData;
 	GLTFMetallic_Roughness metalRoughMaterial;
 	DrawContext mainDrawContext;
+	Camera mainCamera;
 	std::unordered_map<std::string, std::shared_ptr<Node>> loadedNodes;
 
 	void update_scene();
