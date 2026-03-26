@@ -145,6 +145,7 @@ public:
 	DrawContext mainDrawContext;
 	Camera mainCamera;
 	std::unordered_map<std::string, std::shared_ptr<Node>> loadedNodes;
+	std::unordered_map<std::string, std::shared_ptr<LoadedGLTF>> loadedScenes;
 
 	void update_scene();
 

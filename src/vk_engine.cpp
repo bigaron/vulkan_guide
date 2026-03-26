@@ -127,15 +127,15 @@ void VulkanEngine::update_scene() {
 	mainCamera.update();
 	mainDrawContext.OpaqueSurfaces.clear();
 
-	loadedNodes["Suzanne"]->Draw(glm::mat4 { 1.f }, mainDrawContext);
-	for (int x = -3; x < 3; x++) {
+	//loadedNodes["Suzanne"]->Draw(glm::mat4 { 1.f }, mainDrawContext);
+	//for (int x = -3; x < 3; x++) {
 
-		glm::mat4 scale = glm::scale(glm::vec3 { 0.2 });
-		glm::mat4 translation = glm::translate(glm::vec3 { x, 1, 0 });
+	//	glm::mat4 scale = glm::scale(glm::vec3 { 0.2 });
+	//	glm::mat4 translation = glm::translate(glm::vec3 { x, 1, 0 });
 
-		loadedNodes["Cube"]->Draw(translation * scale, mainDrawContext);
-	}
-
+	//	loadedNodes["Cube"]->Draw(translation * scale, mainDrawContext);
+	//}
+	loadedScenes["structure"]->Draw(glm::mat4 { 1.f }, mainDrawContext);
 	sceneData.view = mainCamera.getViewMatrix();
 	// camera projection
 	sceneData.proj = glm::perspective(glm::radians(70.f), (float)_windowExtent.width / (float)_windowExtent.height, 10000.f, 0.1f);
@@ -458,16 +458,22 @@ void VulkanEngine::init() {
 	// everything went fine
 	_isInitialized = true;
 	mainCamera.velocity = glm::vec3(0.f);
-	mainCamera.position = glm::vec3(0, 0, 5);
+	mainCamera.position = glm::vec3(30.f, -00.f, -085.f);
 
 	mainCamera.pitch = 0;
 	mainCamera.yaw = 0;
+	std::string structurePath = { "..\\..\\assets\\structure.glb" };
+	auto structureFile = loadGltf(this, structurePath);
+
+	assert(structureFile.has_value());
+
+	loadedScenes["structure"] = *structureFile;
 }
 
 void VulkanEngine::cleanup() {
 	if (_isInitialized) {
 		vkDeviceWaitIdle(_device);
-
+		loadedScenes.clear();
 		for (int i = 0; i < _frames.size(); i++) {
 			vkDestroyCommandPool(_device, _frames[i]._commandPool, nullptr);
 
@@ -987,7 +993,6 @@ void VulkanEngine::init_pipelines() {
 }
 
 void VulkanEngine::init_default_data() {
-	testMeshes = loadGltfMeshes(this, "..\\..\\assets\\basicmesh.glb").value();
 	//3 default textures, white, grey, black. 1 pixel each
 	uint32_t white = glm::packUnorm4x8(glm::vec4(1, 1, 1, 1));
 	_whiteImage = create_image((void *)&white, VkExtent3D { 1, 1, 1 }, VK_FORMAT_R8G8B8A8_UNORM,
