@@ -126,6 +126,7 @@ MaterialInstance GLTFMetallic_Roughness::write_material(VkDevice device, Materia
 void VulkanEngine::update_scene() { 
 	mainCamera.update();
 	mainDrawContext.OpaqueSurfaces.clear();
+	mainDrawContext.TransparentSurfaces.clear();
 
 	//loadedNodes["Suzanne"]->Draw(glm::mat4 { 1.f }, mainDrawContext);
 	//for (int x = -3; x < 3; x++) {
@@ -391,27 +392,29 @@ void VulkanEngine::draw_geometry(VkCommandBuffer cmd) {
 	writer.write_buffer(0, gpuSceneDataBuffer.buffer, sizeof(GPUSceneData), 0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
 	writer.update_set(_device, globalDescriptor);
 
-	for (const RenderObject &draw : mainDrawContext.OpaqueSurfaces) {
+	auto bindViewAndSciccor = [&]() { 
+			VkViewport viewport = {};
+			viewport.x = 0;
+			viewport.y = 0;
+			viewport.width = _drawExtent.width;
+			viewport.height = _drawExtent.height;
+			viewport.minDepth = 0.f;
+			viewport.maxDepth = 1.f;
 
+			vkCmdSetViewport(cmd, 0, 1, &viewport);
+
+			VkRect2D scissor = {};
+			scissor.offset.x = 0;
+			scissor.offset.y = 0;
+			scissor.extent.width = viewport.width;
+			scissor.extent.height = viewport.height;
+
+			vkCmdSetScissor(cmd, 0, 1, &scissor);
+		};
+
+	auto draw = [&](const RenderObject &draw) {
 		vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, draw.material->pipeline->pipeline);
-		//set dynamic viewport and scissor
-		VkViewport viewport = {};
-		viewport.x = 0;
-		viewport.y = 0;
-		viewport.width = _drawExtent.width;
-		viewport.height = _drawExtent.height;
-		viewport.minDepth = 0.f;
-		viewport.maxDepth = 1.f;
-
-		vkCmdSetViewport(cmd, 0, 1, &viewport);
-
-		VkRect2D scissor = {};
-		scissor.offset.x = 0;
-		scissor.offset.y = 0;
-		scissor.extent.width = viewport.width;
-		scissor.extent.height = viewport.height;
-
-		vkCmdSetScissor(cmd, 0, 1, &scissor);
+		bindViewAndSciccor();
 		vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, draw.material->pipeline->layout, 0, 1, &globalDescriptor, 0, nullptr);
 		vkCmdBindDescriptorSets(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, draw.material->pipeline->layout, 1, 1, &draw.material->materialSet, 0, nullptr);
 
@@ -423,7 +426,16 @@ void VulkanEngine::draw_geometry(VkCommandBuffer cmd) {
 		vkCmdPushConstants(cmd, draw.material->pipeline->layout, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(GPUDrawPushConstants), &pushConstants);
 
 		vkCmdDrawIndexed(cmd, draw.indexCount, 1, draw.firstIndex, 0, 0);
+	};
+
+	for (const RenderObject &r : mainDrawContext.OpaqueSurfaces) {
+		draw(r);
 	}
+
+	for (const RenderObject &r : mainDrawContext.TransparentSurfaces) {
+		draw(r);
+	}
+
 
 	vkCmdEndRendering(cmd);
 }
