@@ -10,6 +10,14 @@
 #include <vk_loader.h> 
 #include <camera.h>
 
+struct EngineStats {
+	float frametime;
+	int triangle_count;
+	int drawcall_count;
+	float scene_update_time;
+	float mesh_draw_time;
+};
+
 struct DeletionQueue {
 	std::deque<std::function<void()>> _deletors;
 	void push_function(std::function<void()> &&function) {
@@ -146,6 +154,7 @@ public:
 	Camera mainCamera;
 	std::unordered_map<std::string, std::shared_ptr<Node>> loadedNodes;
 	std::unordered_map<std::string, std::shared_ptr<LoadedGLTF>> loadedScenes;
+	EngineStats stats;
 
 	void update_scene();
 
